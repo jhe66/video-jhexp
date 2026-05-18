@@ -1,0 +1,34 @@
+# Entorno virtual
+venv/
+.venv/
+
+# Variables de entorno
+.env
+
+# Videos generados (NO subir al repo — son archivos pesados y efímeros)
+output/
+*.mp4
+
+# Música local (si se suma en Fase 4)
+musica/
+
+# Logs locales
+logs/
+*.log
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+dist/
+build/
+
+# Tests
+.pytest_cache/
+.coverage
+htmlcov/
+
+# IDEs
+.vscode/
+.idea/
+*.swp

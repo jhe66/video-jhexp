@@ -1,0 +1,2 @@
+-e /srv/shared/video-engine
+-e /srv/shared/caf-tools
