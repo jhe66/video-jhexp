@@ -8,12 +8,13 @@ Cron: 35 17 * * 1-5   (lun-vie 17:35, 5 minutos después del job de índices LK)
 
 Flujo:
     1. Obtiene Merval y SP500 de Yahoo Finance
-    2. Genera el video vertical (1080x1920, 12s) con la plantilla
+    2. Genera el video vertical (1080x1920, 12s) con la plantilla y música de fondo
     3. Guarda el MP4 en /srv/proyectos/video-jhexp/output/YYYY-MM-DD_cierre.mp4
     4. Envía el video por Telegram al chat configurado
     5. Javier lo descarga en el celular y lo publica manualmente en TikTok/Reels
 """
 from __future__ import annotations
+from video_engine.utils import seleccionar_musica
 
 import os
 os.environ["CAF_ENV_PATH"] = "/srv/proyectos/video-jhexp/.env"
@@ -24,7 +25,7 @@ from datetime import datetime
 
 sys.path.append(str(Path(__file__).parent.parent))
 
-from caf_tools.api.financial import obtener_precio_yahoo
+from caf_tools.api.financial import obtener_cierre_yahoo
 from caf_tools.api.telegram import TelegramClient
 from caf_tools.utils.helpers import (
     cortar_si_feriado,
@@ -44,8 +45,8 @@ OUTPUT_DIR = Path("/srv/proyectos/video-jhexp/output")
 def obtener_datos_mercado() -> dict:
     """Obtiene Merval y SP500 desde Yahoo, devuelve dict listo para el template."""
     logger.info("Obteniendo datos de mercado desde Yahoo Finance...")
-    merval = obtener_precio_yahoo("^MERV")
-    sp500 = obtener_precio_yahoo("^GSPC")
+    merval = obtener_cierre_yahoo("^MERV")
+    sp500 = obtener_cierre_yahoo("^GSPC")
 
     
     fecha = obtener_fecha_hora_argentina()["fecha_formato"]
@@ -71,11 +72,20 @@ def generar_video(datos: dict) -> Path:
 
     output_path = OUTPUT_DIR / f"{fecha_archivo}_cierre.mp4"
 
+    # Elegir música al azar de /srv/shared/music/ (o None si la biblioteca está vacía)
+    musica = seleccionar_musica()
+    if musica is None:
+        logger.warning("No hay música disponible — el video se generará sin audio")
+    else:
+        logger.info("Música elegida: %s", musica.name)
+
     config = VideoConfig(
         duracion=12,
         formato="vertical",
         fps=30,
         paleta="caf_oscuro",
+        musica_path=str(musica) if musica else None,
+        volumen_musica=0.25,
         datos=datos,
         extras={
             "handle": "@javierexpoar",
